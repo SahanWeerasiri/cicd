@@ -20,6 +20,8 @@
     "test:watch": "jest --watchAll"
   },
   "dependencies": {
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "jest": "^30.0.5",
+    "supertest": "^7.1.4"
   }
 }
