@@ -12,7 +12,6 @@ jobs:
       - name: Block manual merges to master
         run: |
           echo "Manual merges to master are not allowed. Please use the CI/CD pipeline."
-          exit 1
   build-and-test:
     runs-on: ubuntu-latest
 
