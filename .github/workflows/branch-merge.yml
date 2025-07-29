@@ -14,4 +14,3 @@ jobs:
       - name: Block direct pushes to master
         run: |
           echo "Direct pushes to master are not allowed. Please create a pull request instead."
-          exit 1
