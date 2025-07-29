@@ -8,6 +8,6 @@ describe('GET /', () => {
             .expect('Content-Type', /json/)
             .expect(200);
 
-        expect(response.body.message).toBe('Hello CI/CD World!');
+        expect(response.body.message).toBe('Hello CI/CD World!, test push');
     });
 });

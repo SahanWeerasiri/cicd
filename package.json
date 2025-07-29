@@ -18,5 +18,8 @@
     "start": "node src/index.js",
     "test": "jest",
     "test:watch": "jest --watchAll"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
   }
 }
