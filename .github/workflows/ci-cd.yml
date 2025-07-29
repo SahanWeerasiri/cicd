@@ -1,18 +1,26 @@
 name: Node.js CI/CD
 
 on:
+  push:
+    branches: [test1, test2, master]
   pull_request:
-    branches: [test1, test2]
+    branches: [test1, test2, master]
 
 jobs:
-  block-merge-manually:
+  block-pull-request-manually:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' && github.base_ref == 'master'
     steps:
       - name: Block manual merges to master
         run: |
           echo "Manual merges to master are not allowed. Please use the CI/CD pipeline."
-          exit 1
+  block-push-manually:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    steps:
+      - name: Block direct pushes to master
+        run: |
+          echo "Direct pushes to master are not allowed. Please create a pull request instead."
   build-and-test:
     runs-on: ubuntu-latest
 
