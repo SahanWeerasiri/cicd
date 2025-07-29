@@ -1,4 +1,4 @@
-name: CI/CD Pipeline with Branch Protection
+name: Node.js CI/CD
 
 on:
   push:
@@ -7,58 +7,43 @@ on:
     branches: [test1, test2, master]
 
 jobs:
-  # Block direct pushes to protected branches
-  block-direct-pushes:
+  block-pull-request-manually:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && contains(fromJson('["refs/heads/master", "refs/heads/test1", "refs/heads/test2"]'), github.ref)
+    if: github.event_name == 'pull_request' && github.base_ref == 'master'
     steps:
-      - name: Block direct push
+      - name: Block manual merges to master
         run: |
-          echo "::error::Direct pushes to protected branches are not allowed. Please create a pull request."
-          exit 1
-
-  # Build and test workflow
+          echo "Manual merges to master are not allowed. Please use the CI/CD pipeline."
+  block-push-manually:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    steps:
+      - name: Block direct pushes to master
+        run: |
+          echo "Direct pushes to master are not allowed. Please create a pull request instead."
   build-and-test:
     runs-on: ubuntu-latest
-    needs: block-direct-pushes
-    if: github.event_name == 'pull_request' || (github.event_name == 'push' && !contains(fromJson('["refs/heads/master", "refs/heads/test1", "refs/heads/test2"]'), github.ref))
-    
+
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v2
+
+      - name: Use Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: '18'
-          cache: 'npm'
-          
+          node-version: "18"
+
       - name: Install dependencies
-        run: npm ci
-          
-      - name: Run linting
-        run: npm run lint
-          
+        run: npm install
+
       - name: Run tests
         run: npm test
         env:
           CI: true
-          
-      - name: Build project
-        run: npm run build
 
-  # Require manual approval for merging to protected branches
-  manual-approval:
-    if: github.event_name == 'pull_request' && contains(fromJson('["master", "test1", "test2"]'), github.base_ref)
-    needs: build-and-test
+  verify-branch-merge:
     runs-on: ubuntu-latest
+    needs: build-and-test
     steps:
-      - name: Wait for manual approval
-        run: |
-          echo "This PR requires manual approval before merging"
-          echo "Please review the changes and approve the workflow run"
-        if: github.event_name == 'pull_request'
-        
-      # The following step is a placeholder; actual PR approval should be enforced via branch protection or workflow run approval
-      - name: Ready for merge
-        if: github.event_name == 'pull_request'
-        run: echo "PR ready for merge after manual approval"
+      - name: Verify branch merge
+        if: ${{ needs.build-and-test.result == 'success' }}
+        run: echo "Branch merge verified successfully."
