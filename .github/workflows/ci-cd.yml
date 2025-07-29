@@ -1,12 +1,18 @@
 name: Node.js CI/CD
 
 on:
-  push:
-    branches: [master]
   pull_request:
-    branches: [master]
+    branches: [test1, test2]
 
 jobs:
+  block-merge-manually:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.base_ref == 'master'
+    steps:
+      - name: Block manual merges to master
+        run: |
+          echo "Manual merges to master are not allowed. Please use the CI/CD pipeline."
+          exit 1
   build-and-test:
     runs-on: ubuntu-latest
 
@@ -26,26 +32,10 @@ jobs:
         env:
           CI: true
 
-  deploy:
-    needs: build-and-test
+  verify-branch-merge:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-
+    needs: build-and-test
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Use Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: "18"
-
-      - name: Install dependencies
-        run: npm install --production
-      
-      - name: Deploy to production
-        run: |
-          echo "Deploying to production server..."
-          # Add your deployment commands here, e.g., scp, rsync, etc.
-          # Example: scp -r ./* user@server:/path/to/deploy
-        env:
-          CD: true
+      - name: Verify branch merge
+        if: ${{ needs.build-and-test.result == 'success' }}
+        run: echo "Branch merge verified successfully."
